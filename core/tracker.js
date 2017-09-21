@@ -42,18 +42,38 @@ function createConnectionSocket(message, rawURL, callback=(err)=>{console.log(er
     return socket;
 }
 
-function sendMessageUDP(socket, message, rawURL, callback=(err)=>{err && console.error(err)}) {
-    const url = parse(rawURL);
+function sendMessageUDP(socket, message, url, callback=(err)=>{err && console.error(err)}) {
     console.log("Attempting...");
     socket.send(message, 0, message.length, url.port, url.hostname, callback);
     timeout = setTimeout(sendMessageUDP, 3000, socket, message, rawURL, callback);
 }
 
-export function getPeers(torrent, callback) {
-    const url = torrent.announce.toString('utf8');
+function getPeersUDP(url, callback) {
     const socket = dgram.createSocket('udp4');
-    const tempURL = "udp://p4p.arenabg.com:1337/announce";
-    sendMessageUDP(socket, createConnectionRequest(), tempURL, callback);
+    sendMessageUDP(socket,createConnectionRequest(),url);
+    socket.on('message', response=>{
+       console.log(response);
+       clearTimeout(timeout);
+       socket.close();
+       callback(response);
+    });
+}
+
+function getPeersTCP(torrent,url, callback) {
+    const socket = new net.Socket();
+    const info_hash = crypto.createHash('sha1').update(bencode.encode(torrent.info)).digest('hex');
+
+    socket.connect(url.port, url.hostname, ()=>{
+       socket.write()
+    });
+}
+
+export function getPeers(torrent, callback) {
+    const rawUrl = torrent.announce.toString('utf8');
+    const url = parse(rawURL);
+
+    const socket = dgram.createSocket('udp4');
+    sendMessageUDP(socket, createConnectionRequest(), url, callback);
     // console.log(url);
     socket.on('message', response => {
         console.log('message received');

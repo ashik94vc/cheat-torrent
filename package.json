@@ -16,6 +16,7 @@
   "author": "Ashik Vetrivelu <vcashik@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.16.2",
     "crypto": "^1.0.1",
     "dgram": "^1.0.1",
     "express": "^4.15.4",
